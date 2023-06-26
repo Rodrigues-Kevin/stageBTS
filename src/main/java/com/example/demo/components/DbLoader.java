@@ -155,6 +155,5 @@ public class DbLoader implements CommandLineRunner {
         loadBooks("Charles", "Baudelaire");
         loadBooks("Alexandre", "Dumas");
          */
-        documentation.createDocument();
     }
 }
