@@ -18,6 +18,8 @@ public class DocumentController {
             documentation.createDocument2();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

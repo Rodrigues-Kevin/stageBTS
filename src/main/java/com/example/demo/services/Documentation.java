@@ -1,31 +1,48 @@
 package com.example.demo.services;
 
-import com.example.demo.dao.BookRepository;
-import com.example.demo.dao.MovieRepository;
+import com.example.demo.dao.*;
+import org.apache.poi.sl.usermodel.ObjectMetaData;
 import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
 public class Documentation {
+    /*
     @Autowired
-    private MovieRepository movieRepository;
+    AuthorRepository authorRepository;
 
     @Autowired
-    private BookRepository bookRepository;
+    BookRepository bookRepository;
+
+    @Autowired
+    DirectorRepository directorRepository;
+
+    @Autowired
+    GenreRepository genreRepository;
+
+    @Autowired
+    MovieRepository movieRepository;*/
+    @Autowired
+    private ApplicationContext context;
 
     public void createDocument() throws Exception
     {
+
         FileInputStream templatePath = new FileInputStream("src\\main\\java\\com\\example\\demo\\templates\\tablesTemplate.docx");
         XWPFDocument document = new XWPFDocument(templatePath);
         templatePath.close();
@@ -64,12 +81,10 @@ public class Documentation {
                     loop = false;
                     run.setText("", 0);
                     List<Object> tableContent = new ArrayList<>();
-                    if (tableName.toString().equals("Movie")) {
-                        tableContent.addAll(movieRepository.findAll());
-                    }
-                    else if (tableName.toString().equals("Book")) {
-                        tableContent.addAll(bookRepository.findAll());
-                    }
+                    //Class c = Class.forName("com.example.demo.dao." + tableName + "Repository");
+                    Object repo = context.getBean("com.example.demo.dao." + tableName + "Repository");
+                    //Object o = c.newInstance();
+                    //System.out.println(c.getMethod("findAll").invoke(o));
                     for (Object object : tableContent) {
                         for (int i = 0; i < loopContent.size(); i++) {
                             boolean goBack = false;
@@ -159,10 +174,26 @@ public class Documentation {
         System.out.println("Word document has been created.");
     }
 
-    public void createDocument2() throws ClassNotFoundException {
-        Class c = Class.forName("com.example.demo.data.Movie");
-        for (Method m : c.getDeclaredMethods()) {
-            System.out.println(m.getName());
-        }
+    public void createDocument2() throws ClassNotFoundException, InvocationTargetException, IllegalAccessException {
+        Object repo = context.getBean( "movieRepo");
+        Method m = BeanUtils.findMethod(repo.getClass(), "findAll");
+        List<Object> l = (List<Object>) m.invoke(repo);
+        l.forEach(obj -> {
+            try {
+                getProperty(obj, "getName");
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void getProperty(Object obj, String property) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Class c = obj.getClass();
+        Method m = c.getDeclaredMethod(property);
+        System.out.println(m.invoke(obj));
     }
 }
