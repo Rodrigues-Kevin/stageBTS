@@ -1,7 +1,5 @@
 package com.example.demo.services;
 
-import com.example.demo.dao.*;
-import org.apache.poi.sl.usermodel.ObjectMetaData;
 import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -17,32 +15,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Service
 public class Documentation {
-    /*
-    @Autowired
-    AuthorRepository authorRepository;
-
-    @Autowired
-    BookRepository bookRepository;
-
-    @Autowired
-    DirectorRepository directorRepository;
-
-    @Autowired
-    GenreRepository genreRepository;
-
-    @Autowired
-    MovieRepository movieRepository;*/
     @Autowired
     private ApplicationContext context;
 
     public void createDocument() throws Exception
     {
-
         FileInputStream templatePath = new FileInputStream("src\\main\\java\\com\\example\\demo\\templates\\tablesTemplate.docx");
         XWPFDocument document = new XWPFDocument(templatePath);
         templatePath.close();
@@ -80,11 +61,9 @@ public class Documentation {
                 else if (text != null && text.contains("foreachend")) {
                     loop = false;
                     run.setText("", 0);
-                    List<Object> tableContent = new ArrayList<>();
-                    //Class c = Class.forName("com.example.demo.dao." + tableName + "Repository");
-                    Object repo = context.getBean("com.example.demo.dao." + tableName + "Repository");
-                    //Object o = c.newInstance();
-                    //System.out.println(c.getMethod("findAll").invoke(o));
+                    Object repo = context.getBean(tableName.toString().toLowerCase() + "Repository");
+                    Method m = BeanUtils.findMethod(repo.getClass(), "findAll");
+                    List<Object> tableContent = (List<Object>) m.invoke(repo);
                     for (Object object : tableContent) {
                         for (int i = 0; i < loopContent.size(); i++) {
                             boolean goBack = false;
@@ -175,7 +154,7 @@ public class Documentation {
     }
 
     public void createDocument2() throws ClassNotFoundException, InvocationTargetException, IllegalAccessException {
-        Object repo = context.getBean( "movieRepo");
+        Object repo = context.getBean( "movieRepository");
         Method m = BeanUtils.findMethod(repo.getClass(), "findAll");
         List<Object> l = (List<Object>) m.invoke(repo);
         l.forEach(obj -> {

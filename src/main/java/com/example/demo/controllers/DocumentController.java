@@ -15,7 +15,7 @@ public class DocumentController {
     @GetMapping
     public void produceDocument() {
         try {
-            documentation.createDocument2();
+            documentation.createDocument();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {
